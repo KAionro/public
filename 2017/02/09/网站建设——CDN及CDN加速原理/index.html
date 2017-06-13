@@ -1,0 +1,924 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/ram/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/ram/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/ram/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="http," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/ram/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="本想自己写这个主题的文章，但网上已经有人写了一篇非常好的文章，觉得难以望其项背。就没有必要再写，直接转载如下： 在不同地域的用户访问网站的响应速度存在差异,为了提高用户访问的响应速度、优化现有Internet中信息的流动,需要在用户和服务器间加入中间层CDN. 使用户能以最快的速度，从最接近用户的地方获得所需的信息，彻底解决网络拥塞，提高响应速度，是目前大型网站使用的流行的应用方案. CDN 概述">
+<meta name="keywords" content="http">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网站建设——CDN及CDN加速原理">
+<meta property="og:url" content="http://zl7.xin/2017/02/09/网站建设——CDN及CDN加速原理/index.html">
+<meta property="og:site_name" content="花泽类">
+<meta property="og:description" content="本想自己写这个主题的文章，但网上已经有人写了一篇非常好的文章，觉得难以望其项背。就没有必要再写，直接转载如下： 在不同地域的用户访问网站的响应速度存在差异,为了提高用户访问的响应速度、优化现有Internet中信息的流动,需要在用户和服务器间加入中间层CDN. 使用户能以最快的速度，从最接近用户的地方获得所需的信息，彻底解决网络拥塞，提高响应速度，是目前大型网站使用的流行的应用方案. CDN 概述">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/3104888-1690a8433c68387f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/3104888-17a9888f27db1a43.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/3104888-cbcc9ec3a65b7226.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-06-13T01:47:51.370Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="网站建设——CDN及CDN加速原理">
+<meta name="twitter:description" content="本想自己写这个主题的文章，但网上已经有人写了一篇非常好的文章，觉得难以望其项背。就没有必要再写，直接转载如下： 在不同地域的用户访问网站的响应速度存在差异,为了提高用户访问的响应速度、优化现有Internet中信息的流动,需要在用户和服务器间加入中间层CDN. 使用户能以最快的速度，从最接近用户的地方获得所需的信息，彻底解决网络拥塞，提高响应速度，是目前大型网站使用的流行的应用方案. CDN 概述">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/3104888-1690a8433c68387f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/ram/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"always","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'C28NXAPKQF',
+      apiKey: '8789631c33390c5ca8e4e45b9d49c1b6',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zl7.xin/2017/02/09/网站建设——CDN及CDN加速原理/"/>
+
+
+
+
+
+  <title>网站建设——CDN及CDN加速原理 | 花泽类</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/ram/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">花泽类</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/ram/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/ram/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/ram/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/ram/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://zl7.xin/ram/2017/02/09/网站建设——CDN及CDN加速原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="K丶Aionro">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/ram/images/kobe-1.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="花泽类">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">网站建设——CDN及CDN加速原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-02-09T18:20:34+08:00">
+                2017-02-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本想自己写这个主题的文章，但网上已经有人写了一篇非常好的文章，觉得难以望其项背。就没有必要再写，直接转载如下：</p>
+<p>在不同地域的用户访问网站的响应速度存在差异,为了提高用户访问的响应速度、优化现有Internet中信息的流动,需要在用户和服务器间加入中间层CDN. 使用户能以最快的速度，从最接近用户的地方获得所需的信息，彻底解决网络拥塞，提高响应速度，是目前大型网站使用的流行的应用方案.</p>
+<h2 id="CDN-概述"><a href="#CDN-概述" class="headerlink" title="CDN 概述"></a>CDN 概述</h2><blockquote>
+<p>CDN的全称是Content Delivery Network，即内容分发网络。其目的是通过在现有的Internet中增加一层新的CACHE(缓存)层，将网站的内容发布到最接近用户的网络”边缘“的节点，使用户可以就近取得所需的内容，提高用户访问网站的响应速度。从技术上全面解决由于网络带宽小、用户访问量大、网点分布不均等原因，提高用户访问网站的响应速度。</p>
+</blockquote>
+<p><img src="http://upload-images.jianshu.io/upload_images/3104888-1690a8433c68387f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="CDN网络节点"> </p>
+<p>Cache层的技术，消除数据峰值访问造成的结点设备阻塞。Cache服务器具有缓存功能，所以大部分网页对象（Web page object）,如html, htm, PHP等页面文件，gif,tif,png,bmp等图片文件，以及其他格式的文件，在有效期（TTL）内，对于重复的访问，不必从原始网站重新传送文件实体, 只需通过简单的认证（Freshness Validation）- 传送几十字节的Header，即可将本地的副本直接传送给访问者。由于缓存服务器通常部署在靠近用户端，所以能获得近似局域网的响应速度，并有效减少广域带宽的消耗。不仅能提高响应速度，节约带宽，对于加速Web服务器，有效减轻源服务器的负载是非常有效的。</p>
+<p>根据加速对象不同，分为客户端加速和服务器加速</p>
+<ul>
+<li>客户端加速 : Cache部署在网络出口处，把常访问的内容缓存在本地，提高响应速度和节约带宽；</li>
+<li>服务器加速 : Cache部署在服务器前端，作为Web服务器的代理缓存机，提高Web服务器的性能，加速访问速度。 如果多台Cache加速服务器且分布在不同地域，需要通过有效地机制管理Cache网络，引导用户就近访问(比如通过DNS引导用户)，全局负载均衡流量，这是CDN内容传输网络的基本思想。</li>
+</ul>
+<p>CDN对网络的优化作用主要体现在如下几个方面 　</p>
+<ul>
+<li>解决服务器端的“第一公里”问题 　</li>
+<li>缓解甚至消除了不同运营商之间互联的瓶颈造成的影响 　</li>
+<li>减轻了各省的出口带宽压力 　</li>
+<li>缓解了骨干网的压力 　</li>
+<li>优化了网上热点内容的分布</li>
+</ul>
+<h2 id="CDN-的工作原理"><a href="#CDN-的工作原理" class="headerlink" title="CDN 的工作原理"></a>CDN 的工作原理</h2><h3 id="传统访问过程-未加速缓存服务"><a href="#传统访问过程-未加速缓存服务" class="headerlink" title="传统访问过程(未加速缓存服务)"></a>传统访问过程(未加速缓存服务)</h3><p>我们先看传统的未加缓存服务的访问过程，以便了解CDN缓存访问方式与未加缓存访问方式的差别：<br><img src="http://upload-images.jianshu.io/upload_images/3104888-17a9888f27db1a43.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="传统访问过程传统访问过程"><br>由上图可见，用户访问未使用CDN缓存网站的过程为:</p>
+<ol>
+<li>用户输入访问的域名,操作系统向 LocalDns 查询域名的ip地址.</li>
+<li>LocalDns向 ROOT DNS 查询域名的授权服务器(这里假设LocalDns缓存过期)</li>
+<li>ROOT DNS将域名授权dns记录回应给 LocalDns</li>
+<li>LocalDns得到域名的授权dns记录后,继续向域名授权dns查询域名的ip地址</li>
+<li>域名授权dns 查询域名记录后，回应给 LocalDns</li>
+<li>LocalDns 将得到的域名ip地址，回应给 用户端</li>
+<li>用户得到域名ip地址后，访问站点服务器</li>
+<li>站点服务器应答请求，将内容返回给客户端.</li>
+</ol>
+<h3 id="CDN访问过程-使用缓存服务"><a href="#CDN访问过程-使用缓存服务" class="headerlink" title="CDN访问过程(使用缓存服务)"></a>CDN访问过程(使用缓存服务)</h3><p>CDN网络是在用户和服务器之间增加Cache层，主要是通过接管DNS实现,将用户的请求引导到Cache上获得源服务器的数据。下面让我们看看访问使用CDN缓存后的网站的过程：<br><img src="http://upload-images.jianshu.io/upload_images/3104888-cbcc9ec3a65b7226.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="CDN访问过程CDN访问过程"><br>通过上图，我们可以了解到，使用了CDN缓存后的网站的访问过程变为：</p>
+<ol>
+<li>用户输入访问的域名,操作系统向 LocalDns 查询域名的ip地址.</li>
+<li>LocalDns向 ROOT DNS 查询域名的授权服务器(这里假设LocalDns缓存过期)</li>
+<li>ROOT DNS将域名授权dns记录回应给 LocalDns</li>
+<li>LocalDns得到域名的授权dns记录后,继续向域名授权dns查询域名的ip地址</li>
+<li>域名授权dns 查询域名记录后(一般是CNAME)，回应给 LocalDns</li>
+<li>LocalDns 得到域名记录后,向智能调度DNS查询域名的ip地址</li>
+<li>智能调度DNS 根据一定的算法和策略(比如静态拓扑，容量等),将最适合的CDN节点ip地址回应给 LocalDns</li>
+<li>LocalDns 将得到的域名ip地址，回应给 用户端</li>
+<li>用户得到域名ip地址后，访问站点服务器</li>
+<li>CDN节点服务器应答请求，将内容返回给客户端.(缓存服务器一方面在本地进行保存，以备以后使用，二方面把获取的数据返回给客户端，完成数据服务过程)</li>
+</ol>
+<p>通过以上的分析我们可以得到，为了实现对普通用户透明(使用缓存后用户客户端无需进行任何设置)访问，需要使用DNS(域名解析)来引导用户来访问Cache服务器，以实现透明的加速服务. 由于用户访问网站的第一步就是域名解析,所以通过修改dns来引导用户访问是最简单有效的方式.</p>
+<h3 id="CDN网络的组成要素"><a href="#CDN网络的组成要素" class="headerlink" title="CDN网络的组成要素"></a>CDN网络的组成要素</h3><p>对于普通的Internet用户，每个CDN节点就相当于一个放置在它周围的网站服务器. 通过对dns的接管，用户的请求被透明地指向离他最近的节点，节点中CDN服务器会像网站的原始服务器一样，响应用户的请求. 由于它离用户更近，因而响应时间必然更快.</p>
+<p>从上面图中 虚线圈起来的那块，就是CDN层,这层是位于 用户端 和 站点服务器 之间.</p>
+<ul>
+<li>智能调度DNS(比如f5的3DNS)<br>智能调度DNS是CDN服务中的关键系统.当用户访问加入CDN服务的网站时，域名解析请求将最终由 “智能调度DNS”负责处理。它通过一组预先定义好的策略，将当时最接近用户的节点地址提供给用户，使用户可以得到快速的服务。同时它需要与分布在各地的CDN节点保持通信，跟踪各节点的健康状态、容量等信息，确保将用户的请求分配到就近可用的节点上.</li>
+<li>缓存功能服务<br>负载均衡设备(如lvs,F5的BIG/IP)<br>内容Cache服务器(如squid）<br>共享存储(根据缓存数据量多少决定是否需要)</li>
+</ul>
+<h2 id="CDN-智能调度Dns-实例分析"><a href="#CDN-智能调度Dns-实例分析" class="headerlink" title="CDN 智能调度Dns 实例分析"></a>CDN 智能调度Dns 实例分析</h2><h3 id="分析img-alibaba-com域名"><a href="#分析img-alibaba-com域名" class="headerlink" title="分析img.alibaba.com域名"></a>分析img.alibaba.com域名</h3><p>在系统中，执行dig命令,输出如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">#dig img.alibaba.com   </div><div class="line"></div><div class="line">; 部分省略</div><div class="line"></div><div class="line">;; QUESTION SECTION:</div><div class="line">;img.alibaba.com.       IN  A</div><div class="line"></div><div class="line">;; ANSWER SECTION:</div><div class="line">img.alibaba.com.    600 IN  CNAME   img.alibaba.com.edgesuite.net.</div><div class="line">img.alibaba.com.edgesuite.net. 7191 IN  CNAME   img.alibaba.com.georedirector.akadns.net.</div><div class="line">img.alibaba.com.georedirector.akadns.net. 3592 IN CNAME a1366.g.akamai.net.</div><div class="line">a1366.g.akamai.net. 12  IN  A   204.203.18.145</div><div class="line">a1366.g.akamai.net. 12  IN  A   204.203.18.160</div><div class="line"></div><div class="line">; 部分省略</div></pre></td></tr></table></figure></p>
+<p>从上面查询结果可以看出 img.alibaba.com. CNAME img.alibaba.com.edgesuite.NET. 后面的CNAME是由 Akamai(CDN服务商) 去跳转到 智能调度器上的.</p>
+<h3 id="分析www-discovery-com域名"><a href="#分析www-discovery-com域名" class="headerlink" title="分析www.discovery.com域名"></a>分析www.discovery.com域名</h3><p>在系统中，继续执行dig命令,输出如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">#dig www.discovery.com</div><div class="line"></div><div class="line">; 部分省略</div><div class="line"></div><div class="line">;; QUESTION SECTION:</div><div class="line">;www.discovery.com.     IN  A</div><div class="line"></div><div class="line">;; ANSWER SECTION:</div><div class="line">www.discovery.com.  1077    IN  CNAME   www.discovery.com.edgesuite.net.</div><div class="line">www.discovery.com.edgesuite.net. 21477 IN CNAME a212.g.akamai.net.</div><div class="line">a212.g.akamai.net.  20  IN  A   204.203.18.154</div><div class="line">a212.g.akamai.net.  20  IN  A   204.203.18.147</div><div class="line"></div><div class="line">; 部分省略</div></pre></td></tr></table></figure></p>
+<p>从上面查询结果可以看出 www.discovery.com. IN CNAME www.discovery.com.edgesuite.Net. 后面的CNAME是由 Akamai(CDN服务商) 去跳转到 智能调度器上的.</p>
+<p>总结:一般来说，网站需要使用到CDN服务时，一般都是将需要加速访问的域名 CNAME到 CDN服务商的域名上。缓存服务和调度功能都是由服务商来完成。</p>
+<h2 id="CDN的-智能调度Dns-简化实现"><a href="#CDN的-智能调度Dns-简化实现" class="headerlink" title="CDN的 智能调度Dns 简化实现"></a>CDN的 智能调度Dns 简化实现</h2><h3 id="调度策略说明"><a href="#调度策略说明" class="headerlink" title="调度策略说明"></a>调度策略说明</h3><p>在用户请求解析域名的时候，智能DNS判断用户的LocalDns的IP，然后跟DNS服务器内部的IP表范围匹配一下，看看用户是电信还是网通用户，然后给用户返回对应的IP地址。这里使用的是静态拓扑的方法,只是判断LocalDns的IP.要想使用更复杂的调度算法可以考虑商业产品,如F5的3DNS。</p>
+<h3 id="假设CDN节点规划"><a href="#假设CDN节点规划" class="headerlink" title="假设CDN节点规划"></a>假设CDN节点规划</h3><p>在这里我们将使用 BIND 的View功能来实现运营商的区分,假设我们在每个运营商的机房都放有一个CDN节点,列表如下:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">域名</th>
+<th style="text-align:center">运营商（view）</th>
+<th style="text-align:center">服务地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">网通(CNC)</td>
+<td style="text-align:center">192.168.0.1</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">电信(TELECOM)</td>
+<td style="text-align:center">192.168.0.2</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">教育网(EDU)</td>
+<td style="text-align:center">192.168.0.3</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">默认(ANY)</td>
+<td style="text-align:center">192.168.0.4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bind-view-配置"><a href="#bind-view-配置" class="headerlink" title="bind view 配置"></a>bind view 配置</h3><p>以下是named.conf配置文件的部分截取，只是涉及到 View 的部分,其他细节可参考互联网.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div></pre></td><td class="code"><pre><div class="line">acl &quot;cnc_iprange&quot;&#123;   //定义ip范围(网通)</div><div class="line">192.168.1.0/24;  </div><div class="line">192.168.2.0/24;</div><div class="line">//此处只是示例,其他省略</div><div class="line">&#125;;  </div><div class="line"></div><div class="line">acl &quot;tel_iprange&quot;&#123;  //定义ip范围(电信)</div><div class="line">192.168.3.0/24;  </div><div class="line">192.168.4.0/24;</div><div class="line">//其他省略</div><div class="line">&#125;;</div><div class="line"></div><div class="line">acl &quot;edu_iprange&quot;&#123;  //定义ip范围(教育网)</div><div class="line">192.168.5.0/24;  </div><div class="line">192.168.6.0/24;</div><div class="line">//其他省略</div><div class="line">&#125;;</div><div class="line"></div><div class="line">acl &quot;default_iprange&quot;&#123; //定义ip范围(默认)</div><div class="line">192.168.7.0/24;  </div><div class="line">192.168.8.0/24;</div><div class="line">//其他省略</div><div class="line">&#125;; </div><div class="line"></div><div class="line"></div><div class="line">view &quot;CNC&quot; &#123;</div><div class="line">    Match-clients&#123;cnc_iprange&#125;;</div><div class="line">    zone &quot;.&quot; IN &#123;</div><div class="line">        type hint;</div><div class="line">        file &quot;named.root&quot;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;localhost&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;localhost.zone&quot;;</div><div class="line">        allow-update &#123; none; &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;cdntest.com&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;cnc_cdntest.zone&quot;;</div><div class="line">    &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">view &quot;TEL&quot; &#123;</div><div class="line">    Match-clients&#123;tel_iprange&#125;;</div><div class="line">    zone &quot;.&quot; IN &#123;</div><div class="line">        type hint;</div><div class="line">        file &quot;named.root&quot;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;localhost&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;localhost.zone&quot;;</div><div class="line">        allow-update &#123; none; &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;cdntest.com&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;tel_cdntest.zone&quot;;</div><div class="line">    &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">view &quot;EDU&quot; &#123;</div><div class="line">    Match-clients&#123;edu_iprange&#125;;</div><div class="line">    zone &quot;.&quot; IN &#123;</div><div class="line">        type hint;</div><div class="line">        file &quot;named.root&quot;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;localhost&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;localhost.zone&quot;;</div><div class="line">        allow-update &#123; none; &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;cdntest.com&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;edu_cdntest.zone&quot;;</div><div class="line">    &#125;;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">view &quot;DEFAULT&quot; &#123;</div><div class="line">    Match-clients&#123;default_iprange&#125;;</div><div class="line">    zone &quot;.&quot; IN &#123;</div><div class="line">        type hint;</div><div class="line">        file &quot;named.root&quot;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;localhost&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;localhost.zone&quot;;</div><div class="line">        allow-update &#123; none; &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    zone &quot;cdntest.com&quot; IN &#123;</div><div class="line">        type master;</div><div class="line">        file &quot;default_cdntest.zone&quot;;</div><div class="line">    &#125;;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<h3 id="zone文件的配置说明"><a href="#zone文件的配置说明" class="headerlink" title="zone文件的配置说明"></a>zone文件的配置说明</h3><p>这4个zone配置文件(cnc_cdntest.zone,tel_cdntest.zone,edu_cdntest.zone,default_cdntest.zone)中，只有www.cndtest.com的A记录不一样，其他的都是一样.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">域名</th>
+<th style="text-align:center">zone配置文件</th>
+<th style="text-align:center">A记录地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">cnc_cdntest.zone</td>
+<td style="text-align:center">192.168.0.1</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">tel_cdntest.zone</td>
+<td style="text-align:center">192.168.0.2</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">edu_cdntest.zone</td>
+<td style="text-align:center">192.168.0.3</td>
+</tr>
+<tr>
+<td style="text-align:center">www.cdntest.com</td>
+<td style="text-align:center">default_cdntest.zone</td>
+<td style="text-align:center">192.168.0.4</td>
+</tr>
+</tbody>
+</table>
+<p>以上只列出了 www.cdntest.com 的A记录地址,其他关于zone的语法 请参考互联网.</p>
+<h3 id="域名解析流程简要说明"><a href="#域名解析流程简要说明" class="headerlink" title="域名解析流程简要说明"></a>域名解析流程简要说明</h3><ol>
+<li>用户向 LocalDns 查询域名 www.cdntest.com</li>
+<li>LocalDns 向 授权DNS 查询www.cdntest.com</li>
+<li>授权DNS 判断用户使用的 LocalDns的ip地址,匹配上述设置的ip范围,如果范围在网通，就将网通对应的ip地址(192.168.0.1),回应给LocalDns(其他依此类推)</li>
+<li>LocalDns 将得到的域名ip地址，回应给 用户端 (域名解析完成)<h4 id="说明：再此过程中，我们简化了主DNS-到-智能DNS-之间的CNAME过程-为了简要说明问题"><a href="#说明：再此过程中，我们简化了主DNS-到-智能DNS-之间的CNAME过程-为了简要说明问题" class="headerlink" title="说明：再此过程中，我们简化了主DNS 到 智能DNS 之间的CNAME过程(为了简要说明问题)."></a>说明：再此过程中，我们简化了主DNS 到 智能DNS 之间的CNAME过程(为了简要说明问题).</h4>这里使用的是静态拓扑(根据ip范围)的方法,也称为地域化方法,只是判断LocalDns的IP.</li>
+</ol>
+<h3 id="此简化方案中的存在的问题"><a href="#此简化方案中的存在的问题" class="headerlink" title="此简化方案中的存在的问题"></a>此简化方案中的存在的问题</h3><ol>
+<li>如果用户设置错误的dns，可能会导致用户访问比原来慢(比如网通用户设置了电信的DNS）</li>
+<li>不能判断CDN节点服务器的健康状态和容量状态，可能会把用户定向到不可用的CDN节点</li>
+<li>由于静态拓扑方法,可能存在用户访问的CDN节点不是最优化和最快的</li>
+<li>…..可能还有其他想不到的….</li>
+</ol>
+<h2 id="总结-Summary）"><a href="#总结-Summary）" class="headerlink" title="总结(Summary）"></a>总结(Summary）</h2><ul>
+<li>在建立CDN网路时，最关键的就是 智能调度DNS，这个是CND网络总协调,通过高效的调度算法，可以使用户得到最佳的访问体验.</li>
+<li>其次就是 CND节点的管理,比如涉及到 内容的同步机制，配置文件的更新等等，都需要有一套机制来保证.</li>
+<li>当然在大型网站中，也要考建设CDN体系的成本和回报率.</li>
+</ul>
+<blockquote>
+<p>自：<a href="http://blog.csdn.net/luoweifu/article/details/51031099" target="_blank" rel="external">阳光日志</a></p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------本文结束<i class="fa fa-paw"></i>感谢阅读------</div>
+    
+</div>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/ram/tags/http/" rel="tag"># http</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ram/2016/12/28/前端性能优化（JavaScript篇）/" rel="next" title="前端性能优化（JavaScript篇）">
+                <i class="fa fa-chevron-left"></i> 前端性能优化（JavaScript篇）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ram/2017/02/15/JavaScript的严格模式，和检测工具/" rel="prev" title="JavaScript的严格模式，和检测工具">
+                JavaScript的严格模式，和检测工具 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/ram/images/kobe-1.png"
+               alt="K丶Aionro" />
+          <p class="site-author-name" itemprop="name">K丶Aionro</p>
+           
+              <p class="site-description motion-element" itemprop="description">一名有逼格、有节操的前端工程师</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/ram/archives/">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/ram/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/u/2162559cf005" target="_blank" title="简书">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  简书
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://qqweb.top" title="Mr.chen" target="_blank">Mr.chen</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CDN-概述"><span class="nav-number">1.</span> <span class="nav-text">CDN 概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CDN-的工作原理"><span class="nav-number">2.</span> <span class="nav-text">CDN 的工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传统访问过程-未加速缓存服务"><span class="nav-number">2.1.</span> <span class="nav-text">传统访问过程(未加速缓存服务)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CDN访问过程-使用缓存服务"><span class="nav-number">2.2.</span> <span class="nav-text">CDN访问过程(使用缓存服务)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CDN网络的组成要素"><span class="nav-number">2.3.</span> <span class="nav-text">CDN网络的组成要素</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CDN-智能调度Dns-实例分析"><span class="nav-number">3.</span> <span class="nav-text">CDN 智能调度Dns 实例分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分析img-alibaba-com域名"><span class="nav-number">3.1.</span> <span class="nav-text">分析img.alibaba.com域名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析www-discovery-com域名"><span class="nav-number">3.2.</span> <span class="nav-text">分析www.discovery.com域名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CDN的-智能调度Dns-简化实现"><span class="nav-number">4.</span> <span class="nav-text">CDN的 智能调度Dns 简化实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#调度策略说明"><span class="nav-number">4.1.</span> <span class="nav-text">调度策略说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#假设CDN节点规划"><span class="nav-number">4.2.</span> <span class="nav-text">假设CDN节点规划</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-view-配置"><span class="nav-number">4.3.</span> <span class="nav-text">bind view 配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zone文件的配置说明"><span class="nav-number">4.4.</span> <span class="nav-text">zone文件的配置说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#域名解析流程简要说明"><span class="nav-number">4.5.</span> <span class="nav-text">域名解析流程简要说明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#说明：再此过程中，我们简化了主DNS-到-智能DNS-之间的CNAME过程-为了简要说明问题"><span class="nav-number">4.5.1.</span> <span class="nav-text">说明：再此过程中，我们简化了主DNS 到 智能DNS 之间的CNAME过程(为了简要说明问题).</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#此简化方案中的存在的问题"><span class="nav-number">4.6.</span> <span class="nav-text">此简化方案中的存在的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结-Summary）"><span class="nav-number">5.</span> <span class="nav-text">总结(Summary）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">K丶Aionro</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/ram/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/ram/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/ram/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/ram/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/ram/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/ram/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/ram/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/ram/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/ram/js/src/algolia-search.js?v=5.1.1"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 背景动画 'src/particle.js',--><!-- 页面点击小红心 --><!--崩溃欺骗-->
+  
+    <script type="text/javascript" src="/ram/js/src/love.js?v=5.1.1"></script>
+  
+    <script type="text/javascript" src="/ram/js/src/catch.js?v=5.1.1"></script>
+  
+</body>
+</html>

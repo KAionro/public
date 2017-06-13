@@ -1,0 +1,806 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/ram/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/ram/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/ram/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Git," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/ram/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="总有一天你会遇到下面的问题1.改完代码匆忙提交,上线发现有问题,怎么办? 赶紧回滚.2.改完代码测试也没有问题,但是上线发现你的修改影响了之前运行正常的代码报错,必须回滚. 这些开发中很常见的问题,所以git的取消提交,回退甚至返回上一版本都是特别重要的. 大致分为下面2种情况: 没有push这种情况发生在你的本地代码仓库,可能你add ,commit 以后发现代码有点问题,准备取消提交,用到下面">
+<meta name="keywords" content="Git">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git reset revert 回退回滚取消提交返回上一版本">
+<meta property="og:url" content="http://zl7.xin/2016/08/05/git reset revert 回退回滚取消提交返回上一版本/index.html">
+<meta property="og:site_name" content="花泽类">
+<meta property="og:description" content="总有一天你会遇到下面的问题1.改完代码匆忙提交,上线发现有问题,怎么办? 赶紧回滚.2.改完代码测试也没有问题,但是上线发现你的修改影响了之前运行正常的代码报错,必须回滚. 这些开发中很常见的问题,所以git的取消提交,回退甚至返回上一版本都是特别重要的. 大致分为下面2种情况: 没有push这种情况发生在你的本地代码仓库,可能你add ,commit 以后发现代码有点问题,准备取消提交,用到下面">
+<meta property="og:updated_time" content="2017-06-13T08:06:04.603Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="git reset revert 回退回滚取消提交返回上一版本">
+<meta name="twitter:description" content="总有一天你会遇到下面的问题1.改完代码匆忙提交,上线发现有问题,怎么办? 赶紧回滚.2.改完代码测试也没有问题,但是上线发现你的修改影响了之前运行正常的代码报错,必须回滚. 这些开发中很常见的问题,所以git的取消提交,回退甚至返回上一版本都是特别重要的. 大致分为下面2种情况: 没有push这种情况发生在你的本地代码仓库,可能你add ,commit 以后发现代码有点问题,准备取消提交,用到下面">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/ram/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"always","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'C28NXAPKQF',
+      apiKey: '8789631c33390c5ca8e4e45b9d49c1b6',
+      indexName: 'blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://zl7.xin/2016/08/05/git reset revert 回退回滚取消提交返回上一版本/"/>
+
+
+
+
+
+  <title>git reset revert 回退回滚取消提交返回上一版本 | 花泽类</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/ram/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">花泽类</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/ram/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/ram/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/ram/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/ram/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://zl7.xin/ram/2016/08/05/git reset revert 回退回滚取消提交返回上一版本/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="K丶Aionro">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/ram/images/kobe-1.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="花泽类">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">git reset revert 回退回滚取消提交返回上一版本</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-05T17:20:51+08:00">
+                2016-08-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="总有一天你会遇到下面的问题"><a href="#总有一天你会遇到下面的问题" class="headerlink" title="总有一天你会遇到下面的问题"></a>总有一天你会遇到下面的问题</h2><p>1.改完代码匆忙提交,上线发现有问题,怎么办? 赶紧回滚.<br>2.改完代码测试也没有问题,但是上线发现你的修改影响了之前运行正常的代码报错,必须回滚.</p>
+<p>这些开发中很常见的问题,所以git的取消提交,回退甚至返回上一版本都是特别重要的.</p>
+<p>大致分为下面2种情况:</p>
+<h2 id="没有push"><a href="#没有push" class="headerlink" title="没有push"></a>没有push</h2><p>这种情况发生在你的本地代码仓库,可能你add ,commit 以后发现代码有点问题,准备取消提交,用到下面命令</p>
+<h3 id="reset"><a href="#reset" class="headerlink" title="reset"></a>reset</h3><p><code>git reset [--soft | --mixed | --hard</code></p>
+<p>上面常见三种类型</p>
+<h4 id="–mixed"><a href="#–mixed" class="headerlink" title="–mixed"></a>–mixed</h4><p>会保留源码,只是将git commit和index 信息回退到了某个版本.</p>
+<p><code>git reset</code> 默认是 <code>--mixed</code> 模式</p>
+<p><code>git reset --mixed</code>  等价于  <code>git reset</code></p>
+<h4 id="–soft"><a href="#–soft" class="headerlink" title="–soft"></a>–soft</h4><p>保留源码,只回退到<code>commit</code> 信息到某个版本.不涉及index的回退,如果还需要提交,直接<code>commit</code>即可.</p>
+<h4 id="–hard"><a href="#–hard" class="headerlink" title="–hard"></a>–hard</h4><p>源码也会回退到某个版本,commit和index 都回回退到某个版本.(注意,这种方式是改变本地代码仓库源码)</p>
+<p>当然有人在push代码以后,也使用<code>reset --hard</code>回退代码到某个版本之前,但是这样会有一个问题,你线上的代码没有变,线上commit,index都没有变,当你把本地代码修改完提交的时候你会发现权是冲突…..</p>
+<p>所以,这种情况你要使用下面的方式</p>
+<h2 id="已经push"><a href="#已经push" class="headerlink" title="已经push"></a>已经push</h2><p>对于已经把代码push到线上仓库,你回退本地代码其实也想同时回退线上代码,回滚到某个指定的版本,线上,线下代码保持一致.你要用到下面的命令</p>
+<h3 id="revert"><a href="#revert" class="headerlink" title="revert"></a>revert</h3><p><code>git revert</code>用于反转提交,执行evert命令时要求工作树必须是干净的.</p>
+<p><code>git revert</code>用一个新提交来消除一个历史提交所做的任何修改.</p>
+<p>revert 之后你的本地代码会回滚到指定的历史版本,这时你再 git push 既可以把线上的代码更新.(这里不会像reset造成冲突的问题)</p>
+<p>revert 使用,需要先找到你想回滚版本唯一的commit标识代码,可以用 git log 或者在adgit搭建的web环境历史提交记录里查看.</p>
+<p><code>git revert c011eb3c20ba6fb38cc94fe5a8dda366a3990c61</code></p>
+<p>通常,前几位即可</p>
+<p><code>git revert c011eb3</code></p>
+<p><code>git revert</code>是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit</p>
+<p>看似达到的效果是一样的,其实完全不同.</p>
+<h4 id="第一"><a href="#第一" class="headerlink" title="第一:"></a>第一:</h4><p>上面我们说的如果你已经push到线上代码库, reset 删除指定commit以后,你git push可能导致一大堆冲突.但是revert 并不会.</p>
+<h4 id="第二"><a href="#第二" class="headerlink" title="第二:"></a>第二:</h4><p>如果在日后现有分支和历史分支需要合并的时候,reset 恢复部分的代码依然会出现在历史分支里.但是revert 方向提交的commit 并不会出现在历史分支里.</p>
+<h4 id="第三"><a href="#第三" class="headerlink" title="第三:"></a>第三:</h4><p>reset 是在正常的commit历史中,删除了指定的commit,这时 HEAD 是向后移动了,而 revert 是在正常的commit历史中再commit一次,只不过是反向提交,他的 HEAD 是一直向前的.</p>
+<blockquote>
+<p>注：以上内容版权所有，作者：K丶Aionro，如有转载，请注明出处！谢谢！</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------本文结束<i class="fa fa-paw"></i>感谢阅读------</div>
+    
+</div>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/ram/tags/Git/" rel="tag"># Git</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ram/2016/07/16/Git-Stash用法/" rel="next" title="Git Stash用法">
+                <i class="fa fa-chevron-left"></i> Git Stash用法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ram/2016/08/12/event.Target 和 event.currentTarget/" rel="prev" title="event.Target 和 event.currentTarget">
+                event.Target 和 event.currentTarget <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/ram/images/kobe-1.png"
+               alt="K丶Aionro" />
+          <p class="site-author-name" itemprop="name">K丶Aionro</p>
+           
+              <p class="site-description motion-element" itemprop="description">一名有逼格、有节操的前端工程师</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/ram/archives/">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/ram/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="http://www.jianshu.com/u/2162559cf005" target="_blank" title="简书">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  简书
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://qqweb.top" title="Mr.chen" target="_blank">Mr.chen</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#总有一天你会遇到下面的问题"><span class="nav-number">1.</span> <span class="nav-text">总有一天你会遇到下面的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#没有push"><span class="nav-number">2.</span> <span class="nav-text">没有push</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#reset"><span class="nav-number">2.1.</span> <span class="nav-text">reset</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#–mixed"><span class="nav-number">2.1.1.</span> <span class="nav-text">–mixed</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#–soft"><span class="nav-number">2.1.2.</span> <span class="nav-text">–soft</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#–hard"><span class="nav-number">2.1.3.</span> <span class="nav-text">–hard</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#已经push"><span class="nav-number">3.</span> <span class="nav-text">已经push</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#revert"><span class="nav-number">3.1.</span> <span class="nav-text">revert</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#第一"><span class="nav-number">3.1.1.</span> <span class="nav-text">第一:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第二"><span class="nav-number">3.1.2.</span> <span class="nav-text">第二:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第三"><span class="nav-number">3.1.3.</span> <span class="nav-text">第三:</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">K丶Aionro</span>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/ram/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/ram/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/ram/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/ram/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/ram/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/ram/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/ram/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/ram/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/ram/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/ram/js/src/algolia-search.js?v=5.1.1"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+  <!-- 背景动画 'src/particle.js',--><!-- 页面点击小红心 --><!--崩溃欺骗-->
+  
+    <script type="text/javascript" src="/ram/js/src/love.js?v=5.1.1"></script>
+  
+    <script type="text/javascript" src="/ram/js/src/catch.js?v=5.1.1"></script>
+  
+</body>
+</html>
